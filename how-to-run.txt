@@ -1,0 +1,54 @@
+============================================================================
+HOW TO RUN: TLS/PKI Certificate Diagnosis Expert System
+============================================================================
+
+Prerequisites:
+--------------
+CLIPS
+
+Running a Test Case:
+--------------------
+The system includes several pre-defined test cases in the 'cases/' folder.
+To run a specific scenario (e.g., Expired Certificate):
+
+1. Load the system by running:
+   (batch* "run.clp")
+   This will load the factbase, rulebase
+
+2.Load the test case:
+   (batch* "cases/case_expired_cert.clp")
+
+3. Execute the diagnosis:
+   (run-diagnosis)
+
+4. (Optional) To see the logic used by the system:
+   (show-reasoning)
+
+Available Test Cases:
+---------------------
+- (batch "cases/case_expired_cert.clp")      : Tests expiration logic.
+- (batch "cases/case_hostname_mismatch.clp") : Tests domain identity logic.
+- (batch "cases/case_chain_incomplete.clp")   : Tests intermediate CA logic.
+- (batch "cases/case_missing_sni.clp")       : Tests SNI configuration logic.
+
+Interactive Mode:
+-----------------
+To manually enter certificate and environment data and get a diagnosis:
+
+1. Run the interactive command:
+   (collect-and-run)
+
+2. Follow the prompts to enter error codes, hostnames, and certificate details.
+
+File Structure:
+---------------
+- run.clp       : Main entry point; loads all other components.
+- factbase.clp  : Defines data structures (templates) for the domain.
+- rulebase.clp  : Contains the diagnostic rules and logic.
+- ui.clp        : Contains functions for user display and input.
+- cases/        : Folder containing batch files for automated testing.
+
+============================================================================
+Developed by: Barath Sundararaj & Thea Anil
+Course: COMP 6741 - Intelligent Systems
+============================================================================
