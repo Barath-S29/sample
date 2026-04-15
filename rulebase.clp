@@ -360,50 +360,19 @@
   (printout t "DIAGNOSIS: Certificate Not Yet Valid (CF: 0.92)" crlf))
 
 ; ---------------------------------------------------------
-; FUZZY LOGIC - FUZZIFICATION RULES
-; ---------------------------------------------------------
-
-; Fuzzifies 'DaysToExpiry' into linguistic terms.
-(defrule fuzzify-expiry-crit
-  (fuzzy-input (name DaysToExpiry) (value ?v&:(<= ?v 10)))
-  =>
-  (assert (linguistic-variable (name DaysToExpiry) (term CriticallySoon) (degree 1.0))))
-
-(defrule fuzzify-expiry-soon
-  (fuzzy-input (name DaysToExpiry) (value ?v&:(and (> ?v 10) (<= ?v 45))))
-  =>
-  (assert (linguistic-variable (name DaysToExpiry) (term Soon) (degree 1.0))))
-
-(defrule fuzzify-expiry-safe
-  (fuzzy-input (name DaysToExpiry) (value ?v&:(> ?v 45)))
-  =>
-  (assert (linguistic-variable (name DaysToExpiry) (term Safe) (degree 1.0))))
-
-; Fuzzifies 'KeySize' into linguistic terms.
-(defrule fuzzify-keysize-weak
-  (fuzzy-input (name KeySize) (value ?v&:(< ?v 2048)))
-  =>
-  (assert (linguistic-variable (name KeySize) (term Weak) (degree 1.0))))
-
-(defrule fuzzify-keysize-standard
-  (fuzzy-input (name KeySize) (value ?v&:(>= ?v 2048)))
-  =>
-  (assert (linguistic-variable (name KeySize) (term Standard) (degree 1.0))))
-
-; ---------------------------------------------------------
 ; FUZZY REASONING RULES
 ; ---------------------------------------------------------
 
 ; Critical risk takes highest priority - excludes other risk rules from firing
 (defrule fuzzy-risk-critical
-  (linguistic-variable (name DaysToExpiry) (term CriticallySoon))
+  (DaysToExpiry CriticallySoon)
   =>
   (assert (linguistic-variable (name RiskLevel) (term Critical) (degree 0.95)))
   (printout t "Fuzzy Inference: Risk is CRITICAL due to imminent expiry." crlf))
 
 ; High risk - only fires if no Critical risk exists
 (defrule fuzzy-risk-high
-  (linguistic-variable (name DaysToExpiry) (term Soon))
+  (DaysToExpiry Soon)
   (not (linguistic-variable (name RiskLevel) (term Critical)))
   =>
   (assert (linguistic-variable (name RiskLevel) (term High) (degree 0.80)))
@@ -411,7 +380,7 @@
 
 ; Medium risk - only fires if no Critical or High risk exists
 (defrule fuzzy-risk-medium-weak-key
-  (linguistic-variable (name KeySize) (term Weak))
+  (KeySize Weak)
   (not (linguistic-variable (name RiskLevel) (term Critical)))
   (not (linguistic-variable (name RiskLevel) (term High)))
   =>
@@ -420,8 +389,8 @@
 
 ; Low risk - only fires if no higher risk exists
 (defrule fuzzy-risk-low-safe
-  (linguistic-variable (name DaysToExpiry) (term Safe))
-  (linguistic-variable (name KeySize) (term Standard))
+  (DaysToExpiry Safe)
+  (KeySize Standard)
   (not (linguistic-variable (name RiskLevel) (term Critical)))
   (not (linguistic-variable (name RiskLevel) (term High)))
   (not (linguistic-variable (name RiskLevel) (term Medium)))
@@ -476,7 +445,7 @@
 
 ; Increases confidence if the specific OpenSSL error code for expiry is present.
 (defrule boost-expired-if-errorcode
-  ?d <- (diagnosis (diagnosis-type expired-certificate) (confidence-score ?s))
+  ?d <- (diagnosis (diagnosis-type expired-certificate) (confidence-score ?s&:(< ?s 0.99)))
   (tls-error (error-code CERT_HAS_EXPIRED))
   =>
   (modify ?d (confidence-score (min 0.99 (+ ?s 0.03))))
@@ -484,7 +453,7 @@
 
 ; Increases confidence in chain issues if the specific issuer-missing code is present.
 (defrule boost-chain-if-common-openssl
-  ?d <- (diagnosis (diagnosis-type incomplete-chain) (confidence-score ?s))
+  ?d <- (diagnosis (diagnosis-type incomplete-chain) (confidence-score ?s&:(< ?s 0.95)))
   (tls-error (error-code UNABLE_TO_GET_ISSUER_CERT))
   =>
   (modify ?d (confidence-score (min 0.95 (+ ?s 0.07))))

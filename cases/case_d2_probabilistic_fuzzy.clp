@@ -40,5 +40,5 @@
     (server-location "internal"))     ; Internal location -> internal-self-signed
 
   ; FUZZY INPUTS
-  (fuzzy-input (name DaysToExpiry) (value 5.0)) ; CriticallySoon -> critical-risk
-  (fuzzy-input (name KeySize) (value 1024.0))) ; Weak -> medium-risk
+  (DaysToExpiry (5.0 0) (5.0 1) (5.0 0)) ; CriticallySoon -> critical-risk
+  (KeySize (1024.0 0) (1024.0 1) (1024.0 0))) ; Weak -> medium-risk

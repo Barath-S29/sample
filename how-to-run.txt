@@ -4,7 +4,7 @@ HOW TO RUN: TLS/PKI Certificate Diagnosis Expert System
 
 Prerequisites:
 --------------
-CLIPS
+FuzzyCLIPS
 
 Running a Test Case:
 --------------------
@@ -30,6 +30,14 @@ Available Test Cases:
 - (batch "cases/case_hostname_mismatch.clp") : Tests domain identity logic.
 - (batch "cases/case_chain_incomplete.clp")   : Tests intermediate CA logic.
 - (batch "cases/case_missing_sni.clp")       : Tests SNI configuration logic.
+- (batch "cases/case_d2_probabilistic_fuzzy.clp")       : Tests probabilistic reasoning and fuzzy logic.
+
+Case D2 Probabilistic Fuzzy:
+----------------------------
+- This test case tests how well the system handles uncertain/incomplete information:
+   - Certainity Factors: Not everything is 100% certain -> Self-signed certs are risky (CF: 0.95), but okay internally (CF: 0.7)
+   - Fuzzy Logic: Boundaries are blurry -> Is "10 days to expiry" critical or just risky?
+   - Combined Evidence: Multiple clues strengthen/weaken diagnosis -> Weak protocol + weak cipher = obsolete system (CF: 0.95)
 
 Interactive Mode:
 -----------------

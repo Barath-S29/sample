@@ -2,7 +2,7 @@
 ; CASE: EXPIRED CERTIFICATE (PROBABILISTIC & FUZZY)
 ; ============================================================================
 
-(deffacts expired-case-facts
+(assert ;deffacts expired-case-facts
   ; Basic TLS Error from client
   (tls-error 
     (error-code CERT_HAS_EXPIRED) 
@@ -41,5 +41,5 @@
     (server-location "external"))
 
   ; NEW for Deliverable 2: Fuzzy inputs (Possibilistic)
-  (fuzzy-input (name DaysToExpiry) (value -90.0)) ; Expired 90 days ago
-  (fuzzy-input (name KeySize) (value 2048.0)))
+  (DaysToExpiry (-90.0 0) (-90.0 1) (-90.0 0)) ; Expired 90 days ago
+  (KeySize (2048.0 0) (2048.0 1) (2048.0 0)))

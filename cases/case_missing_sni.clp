@@ -41,5 +41,5 @@
     (hsts-enabled yes)
     (server-location "external"))
 
-  (fuzzy-input (name DaysToExpiry) (value -133.0))
-  (fuzzy-input (name KeySize) (value 2048.0)))
+  (DaysToExpiry (-133.0 0) (-133.0 1) (-133.0 0))
+  (KeySize (2048.0 0) (2048.0 1) (2048.0 0)))

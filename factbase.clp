@@ -82,17 +82,34 @@
   (slot priority (allowed-values immediate high medium low)) ; Urgency of the repair.
   (multislot steps (type STRING)))              ; A sequential list of specific technical steps to fix the issue.
 
-; The 'linguistic-variable' template implements Fuzzy Logic in standard CLIPS. 
-; It allows us to represent a value (e.g. 5 days) as a membership degree in a fuzzy set (e.g. 'CriticallySoon' with degree 0.8).
-(deftemplate linguistic-variable
-  (slot name (type SYMBOL))    ; The variable name (e.g. DaysToExpiry).
-  (slot term (type SYMBOL))    ; The linguistic term (e.g. Soon, Safe).
-  (slot degree (type FLOAT) (range 0.0 1.0))) ; Membership degree (mu).
+; ---------------------------------------------------------
+; FUZZYCLIPS: Fuzzy variables (native fuzzy facts)
+; ---------------------------------------------------------
+; In FuzzyCLIPS, fuzzy variables are defined using deftemplate with a universe
+; of discourse and named linguistic terms (membership functions).
+;
+; These definitions replace the prior "manual fuzzification" approach.
+; Crisp inputs should be asserted as singleton triples, e.g.:
+;   (assert (DaysToExpiry (5 0) (5 1) (5 0)))
+;   (assert (KeySize (1024 0) (1024 1) (1024 0)))
 
-; The 'fuzzy-input' template stores the raw crisp values before fuzzification.
-(deftemplate fuzzy-input
+(deftemplate DaysToExpiry
+  -365 365 days
+  ((CriticallySoon (-365 1) (10 1) (11 0))
+   (Soon (10 0) (11 1) (45 1) (46 0))
+   (Safe (45 0) (46 1) (365 1))))
+
+(deftemplate KeySize
+  0 8192 bits
+  ((Weak (0 1) (2047 1) (2048 0))
+   (Standard (2047 0) (2048 1) (8192 1))))
+
+; The 'linguistic-variable' template is kept for downstream fuzzy-derived
+; summaries (e.g., RiskLevel term + degree) that are asserted by rules.
+(deftemplate linguistic-variable
   (slot name (type SYMBOL))
-  (slot value (type FLOAT)))
+  (slot term (type SYMBOL))
+  (slot degree (type FLOAT) (range 0.0 1.0))) ; Membership degree (mu).
 
 ; The 'reasoning-trace' template stores the logical path the system took to reach a conclusion.
 ; This is critical for the "explainability" requirement of the project.

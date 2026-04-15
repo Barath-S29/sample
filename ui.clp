@@ -20,12 +20,14 @@
 (deffunction show-diagnoses ()
   (printout t crlf "CURRENT DIAGNOSES:" crlf "==================" crlf)
   (bind ?count 0)
-  (do-for-all-facts ((?d diagnosis)) TRUE
-    (bind ?count (+ ?count 1))
-    (printout t ?count ". " ?d:diagnosis-type
-              " (Confidence: " ?d:confidence
-              ", CF: " ?d:cf ")" crlf
-              "   " ?d:description crlf))
+  (progn$ (?d (get-fact-list))
+    (if (eq (fact-relation ?d) diagnosis)
+      then
+      (bind ?count (+ ?count 1))
+      (printout t ?count ". " (fact-slot-value ?d diagnosis-type)
+                " (Confidence: " (fact-slot-value ?d confidence)
+                ", CF: " (fact-slot-value ?d cf) ")" crlf
+                "   " (fact-slot-value ?d description) crlf)))
   (if (= ?count 0) then (printout t "No diagnoses found." crlf))
   (printout t crlf)
   (return ?count))
@@ -35,13 +37,15 @@
 (deffunction show-recommendations ()
   (printout t crlf "RECOMMENDATIONS:" crlf "=================" crlf)
   (bind ?count 0)
-  (do-for-all-facts ((?r recommendation)) TRUE
-    (bind ?count (+ ?count 1))
-    (printout t ?count ". " ?r:action-description
-              " (Priority: " ?r:priority ")" crlf
-              "   Steps:" crlf)
-    (foreach ?step ?r:steps
-      (printout t "   - " ?step crlf)))
+  (progn$ (?r (get-fact-list))
+    (if (eq (fact-relation ?r) recommendation)
+      then
+      (bind ?count (+ ?count 1))
+      (printout t ?count ". " (fact-slot-value ?r action-description)
+                " (Priority: " (fact-slot-value ?r priority) ")" crlf
+                "   Steps:" crlf)
+      (progn$ (?step (fact-slot-value ?r steps))
+        (printout t "   - " ?step crlf))))
   (if (= ?count 0) then (printout t "No recommendations found." crlf))
   (printout t crlf)
   (return ?count))
@@ -50,10 +54,12 @@
 ; This satisfies the "Explainability" requirement by showing how logic was applied.
 (deffunction show-reasoning ()
   (printout t crlf "REASONING TRACE (EXPLAINABILITY):" crlf "=================================" crlf)
-  (do-for-all-facts ((?r reasoning-trace)) TRUE
-    (printout t "Rule Fired: " ?r:rule-fired crlf
-              "  Evidence Used: " ?r:evidence-used crlf
-              "  Conclusion Reached: " ?r:conclusion crlf crlf)))
+  (progn$ (?r (get-fact-list))
+    (if (eq (fact-relation ?r) reasoning-trace)
+      then
+      (printout t "Rule Fired: " (fact-slot-value ?r rule-fired) crlf
+                "  Evidence Used: " (fact-slot-value ?r evidence-used) crlf
+                "  Conclusion Reached: " (fact-slot-value ?r conclusion) crlf crlf))))
 
 ; The main entry point to execute reasoning and display all outputs.
 (deffunction run-diagnosis ()
@@ -146,6 +152,9 @@
 
   (printout t "Confirm Key Size again for fuzzification (e.g. 2048): ")
   (bind ?fks (read))
+  
+  (bind ?daysf (float ?days))
+  (bind ?fksf (float ?fks))
 
   ;; Assert the base facts into the Factbase (F)
   (assert
@@ -179,8 +188,8 @@
       (ocsp-stapling ?ocsp)
       (hsts-enabled ?hsts)
       (server-location ?loc))
-    (fuzzy-input (name DaysToExpiry) (value (float ?days)))
-    (fuzzy-input (name KeySize) (value (float ?fks)))))
+    (DaysToExpiry (?daysf 0) (?daysf 1) (?daysf 0))
+    (KeySize (?fksf 0) (?fksf 1) (?fksf 0)))))
 
 ; Combines input collection and diagnosis into a single command for the user.
 (deffunction collect-and-run ()
