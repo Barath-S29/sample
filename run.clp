@@ -1,8 +1,11 @@
 ; ============================================================================
 ; RUN.CLP - Main Execution Script for TLS/PKI Expert System
 ; ============================================================================
-; This script automates the loading of the Knowledge Base (K) and the User Interface (UI). 
-; It provides the user with instructions on how to interact with the system once loaded.
+; This script automates the loading of the Knowledge Base (K) and the
+; User Interface (UI). It provides the user with instructions on how to
+; interact with the system once loaded.
+; NOTE: This file must be run inside FuzzyCLIPS (not standard CLIPS)
+; because the factbase uses FuzzyCLIPS fuzzy deftemplate syntax.
 ; ============================================================================
 
 ; Clear any existing facts/rules from memory to ensure a clean state.

@@ -1,45 +1,56 @@
 ; ============================================================================
 ; CASE: EXPIRED CERTIFICATE (PROBABILISTIC & FUZZY)
 ; ============================================================================
+; Expected diagnoses:
+;   - expired-certificate  (CF ~0.99, boosted by error code)
+;   - fuzzy-risk-assessment via RiskLevel Critical (DaysToExpiry=0 -> CriticallySoon)
+; ============================================================================
 
-(assert ;deffacts expired-case-facts
-  ; Basic TLS Error from client
-  (tls-error 
-    (error-code CERT_HAS_EXPIRED) 
-    (error-message "certificate has expired") 
-    (error-category certificate-invalid) 
+(printout t crlf "Loading CASE: Expired Certificate" crlf)
+(reset)
+
+(assert
+  (tls-error
+    (error-code CERT_HAS_EXPIRED)
+    (error-message "certificate has expired")
+    (error-category certificate-invalid)
     (severity critical))
 
-  ; Certificate details
-  (certificate 
-    (common-name "expired.example.com") 
+  (certificate
+    (common-name "expired.example.com")
     (subject-alt-names "expired.example.com")
     (not-before "2023-01-01T00:00:00Z")
     (not-after "2024-01-01T00:00:00Z")
     (signature-algorithm "sha256WithRSAEncryption")
     (key-size 2048)
+    (issuer "DigiCert SHA2 Secure Server CA")
+    (serial-number "01:AA:BB:CC:DD:EE:FF:00")
     (is-self-signed no))
 
-  ; Chain info
-  (certificate-chain 
-    (chain-complete yes)
+  (certificate-chain
+    (chain-length 3)
     (has-intermediate yes)
-    (root-trusted yes))
+    (root-trusted yes)
+    (chain-complete yes)
+    (missing-certificates))
 
-  ; Environment context
-  (environment 
+  (environment
+    (client-os "Ubuntu 22.04")
+    (server-type "nginx/1.24.0")
     (requested-hostname "expired.example.com")
+    (sni-value "expired.example.com")
     (sni-sent yes)
     (current-timestamp "2026-04-01T00:00:00Z"))
 
-  ; NEW for Deliverable 2: Connection details (Probabilistic)
   (connection
     (protocol-version "TLSv1.3")
     (cipher-suite "TLS_AES_256_GCM_SHA384")
     (ocsp-stapling yes)
     (hsts-enabled yes)
-    (server-location "external"))
+    (server-location "external")))
 
-  ; NEW for Deliverable 2: Fuzzy inputs (Possibilistic)
-  (DaysToExpiry (-90.0 0) (-90.0 1) (-90.0 0)) ; Expired 90 days ago
-  (KeySize (2048.0 0) (2048.0 1) (2048.0 0)))
+; Fuzzy inputs: certificate expired 90 days ago — treated as 0 days remaining
+; (clamped to universe minimum) so DaysToExpiry is fully CriticallySoon.
+; KeySize 2048 is fully Standard.
+(assert (DaysToExpiry (0 1)))
+(assert (KeySize (2048 1)))

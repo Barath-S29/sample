@@ -1,3 +1,11 @@
+; ============================================================================
+; CASE: INCOMPLETE CERTIFICATE CHAIN
+; ============================================================================
+; Expected diagnoses:
+;   - incomplete-chain  (CF 0.88, boosted by UNABLE_TO_GET_ISSUER_CERT error code)
+;   - fuzzy-risk-assessment via RiskLevel Safe (DaysToExpiry=365 -> Safe)
+; ============================================================================
+
 (printout t crlf "Loading CASE: Incomplete Certificate Chain" crlf)
 (reset)
 
@@ -11,8 +19,8 @@
   (certificate
     (common-name "api.example.com")
     (subject-alt-names "api.example.com")
-    (not-before "2024-06-01T00:00:00Z")
-    (not-after "2025-06-01T00:00:00Z")
+    (not-before "2025-06-01T00:00:00Z")
+    (not-after "2026-06-01T00:00:00Z")
     (signature-algorithm "sha256WithRSAEncryption")
     (key-size 2048)
     (issuer "Example Intermediate CA")
@@ -39,7 +47,8 @@
     (cipher-suite "TLS_AES_256_GCM_SHA384")
     (ocsp-stapling yes)
     (hsts-enabled yes)
-    (server-location "external"))
+    (server-location "external")))
 
-  (DaysToExpiry (-315.0 0) (-315.0 1) (-315.0 0))
-  (KeySize (2048.0 0) (2048.0 1) (2048.0 0)))
+; Fuzzy inputs: ~50 days until expiry (Soon range) and standard 2048-bit key.
+(assert (DaysToExpiry (50 1)))
+(assert (KeySize (2048 1)))

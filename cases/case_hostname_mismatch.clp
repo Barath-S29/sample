@@ -1,3 +1,11 @@
+; ============================================================================
+; CASE: HOSTNAME MISMATCH
+; ============================================================================
+; Expected diagnoses:
+;   - hostname-mismatch (CF 0.98, definite — api.example.com not in CN/SANs)
+;   - fuzzy-risk-assessment via RiskLevel Safe (DaysToExpiry=245 -> Safe)
+; ============================================================================
+
 (printout t crlf "Loading CASE: Hostname Mismatch" crlf)
 (reset)
 
@@ -11,8 +19,8 @@
   (certificate
     (common-name "www.example.com")
     (subject-alt-names "www.example.com" "example.com")
-    (not-before "2024-01-01T00:00:00Z")
-    (not-after "2025-12-01T00:00:00Z")
+    (not-before "2025-01-01T00:00:00Z")
+    (not-after "2026-12-01T00:00:00Z")
     (signature-algorithm "sha256WithRSAEncryption")
     (key-size 2048)
     (issuer "DigiCert SHA2 Secure Server CA")
@@ -39,7 +47,8 @@
     (cipher-suite "TLS_AES_256_GCM_SHA384")
     (ocsp-stapling yes)
     (hsts-enabled yes)
-    (server-location "external"))
+    (server-location "external")))
 
-  (DaysToExpiry (-133.0 0) (-133.0 1) (-133.0 0))
-  (KeySize (2048.0 0) (2048.0 1) (2048.0 0)))
+; Fuzzy inputs: ~245 days until expiry (fully Safe) and standard 2048-bit key.
+(assert (DaysToExpiry (245 1)))
+(assert (KeySize (2048 1)))

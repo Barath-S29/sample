@@ -1,3 +1,11 @@
+; ============================================================================
+; CASE: MISSING SNI
+; ============================================================================
+; Expected diagnoses:
+;   - sni-missing (CF 0.60 — client on Windows Server 2012 did not send SNI)
+;   - fuzzy-risk-assessment via RiskLevel Safe (DaysToExpiry=245 -> Safe)
+; ============================================================================
+
 (printout t crlf "Loading CASE: Missing SNI" crlf)
 (reset)
 
@@ -11,8 +19,8 @@
   (certificate
     (common-name "default.example.com")
     (subject-alt-names "default.example.com")
-    (not-before "2024-01-01T00:00:00Z")
-    (not-after "2025-12-01T00:00:00Z")
+    (not-before "2025-01-01T00:00:00Z")
+    (not-after "2026-12-01T00:00:00Z")
     (signature-algorithm "sha256WithRSAEncryption")
     (key-size 2048)
     (issuer "Example CA")
@@ -39,7 +47,8 @@
     (cipher-suite "TLS_AES_256_GCM_SHA384")
     (ocsp-stapling yes)
     (hsts-enabled yes)
-    (server-location "external"))
+    (server-location "external")))
 
-  (DaysToExpiry (-133.0 0) (-133.0 1) (-133.0 0))
-  (KeySize (2048.0 0) (2048.0 1) (2048.0 0)))
+; Fuzzy inputs: ~245 days until expiry (fully Safe) and standard 2048-bit key.
+(assert (DaysToExpiry (245 1)))
+(assert (KeySize (2048 1)))
