@@ -3,18 +3,14 @@
 ; ============================================================================
 
 ; This file defines the "Factbase" component (F) of our expert system's knowledge (K = F U R).
-; It specifies the templates (data structures) used to represent observable evidence,
-; internal derived features, and final diagnostic outputs.
-; These templates allow the system to store information about certificates, the
-; environment in which they are used, and the logical conclusions reached by the
-; inference engine.
+; It specifies the templates (data structures) used to represent observable evidence, internal derived features, and final diagnostic outputs.
+; These templates allow the system to store information about certificates, the environment in which they are used, and the logical conclusions reached by the inference engine.
 
 ; ----------------------------------------------------------------------------
 ; STANDARD (CRISP) TEMPLATES
 ; ----------------------------------------------------------------------------
 
-; The 'tls-error' template represents low-level error data typically captured
-; from a client (like OpenSSL or a browser) or a server log.
+; The 'tls-error' template represents low-level error data typically captured from a client (like OpenSSL or a browser) or a server log.
 ; It bridges the gap between raw system errors and high-level diagnosis.
 (deftemplate tls-error
   (slot error-code     (type SYMBOL))  ; The specific technical error string (e.g., CERT_HAS_EXPIRED).
@@ -23,8 +19,7 @@
   (slot severity       (type SYMBOL))) ; Importance of the error (e.g., critical, warning).
 
 ; The 'certificate' template represents the core attributes of a
-; Public Key Infrastructure (PKI) certificate. This information is
-; used to verify validity windows, cryptographic strength, and ownership.
+; Public Key Infrastructure (PKI) certificate. This information is used to verify validity windows, cryptographic strength, and ownership.
 (deftemplate certificate
   (slot common-name         (type STRING))             ; The primary hostname assigned to the certificate.
   (multislot subject-alt-names (type STRING))          ; List of additional hostnames or IP addresses.
@@ -36,8 +31,7 @@
   (slot serial-number       (type STRING))             ; Unique identifier for the certificate.
   (slot is-self-signed      (type SYMBOL) (default no))) ; Indicates if the cert was signed by itself.
 
-; The 'certificate-chain' template manages the hierarchical relationship
-; between the server certificate, intermediate CAs, and the Root CA.
+; The 'certificate-chain' template manages the hierarchical relationship between the server certificate, intermediate CAs, and the Root CA.
 (deftemplate certificate-chain
   (slot chain-length         (type INTEGER))                      ; Total number of certificates in the path.
   (slot has-intermediate     (allowed-values yes no unknown))     ; Whether intermediate CA certs were sent.
@@ -62,10 +56,8 @@
   (slot hsts-enabled      (allowed-values yes no unknown)) ; If HTTP Strict Transport Security is active.
   (slot server-location   (type STRING) (default "external"))) ; "internal" or "external" network.
 
-; The 'feature' template stores derived high-level logical facts extracted from
-; raw templates above. This abstraction makes the rulebase more modular.
-; NOTE: The 'cf' slot here stores Certainty Factors for probabilistic features,
-; handled natively by FuzzyCLIPS via (assert ... CF x.x) syntax in rules.
+; The 'feature' template stores derived high-level logical facts extracted from raw templates above. This abstraction makes the rulebase more modular.
+
 (deftemplate feature
   (slot name  (type SYMBOL)) ; A logical label (e.g., 'is-expired', 'hostname-mismatch').
   (slot value (type SYMBOL)) ; The value of the feature (usually 'yes' or 'no').
@@ -85,8 +77,7 @@
   (slot priority           (allowed-values immediate high medium low)) ; Urgency of the repair.
   (multislot steps         (type STRING)))             ; A sequential list of specific technical steps.
 
-; The 'reasoning-trace' template stores the logical path the system took to
-; reach a conclusion. This is critical for the "explainability" requirement.
+; The 'reasoning-trace' template stores the logical path the system took to reach a conclusion. This is critical for the "explainability" requirement.
 (deftemplate reasoning-trace
   (slot rule-fired     (type SYMBOL))  ; The name of the rule that was triggered.
   (slot evidence-used  (type STRING))  ; A summary of the facts that satisfied the rule's conditions.
@@ -97,8 +88,7 @@
 ; FUZZYCLIPS FUZZY TEMPLATES
 ; ----------------------------------------------------------------------------
 ; These replace the old 'fuzzy-input' and 'linguistic-variable' crisp templates.
-; FuzzyCLIPS natively handles membership functions, fuzzification, and
-; fuzzy pattern matching through these deftemplate declarations.
+; FuzzyCLIPS natively handles membership functions, fuzzification, and fuzzy pattern matching through these deftemplate declarations.
 
 ; 'DaysToExpiry' fuzzy variable: universe of discourse is 0 to 365 days.
 ; Linguistic terms model certificate urgency with overlapping membership functions
