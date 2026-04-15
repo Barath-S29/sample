@@ -1,26 +1,6 @@
 ; ============================================================================
 ; UI.CLP - User Interface and Interaction Functions
 ; ============================================================================
-; FuzzyCLIPS 6.10d COMPATIBILITY — FINAL FIX
-; ---------------------------------------------------------------------------
-; ROOT CAUSE ANALYSIS:
-;   FuzzyCLIPS 6.10d is built on CLIPS 6.04. Neither find-all-facts nor
-;   do-for-all-facts exist in this engine — both arrived in CLIPS 6.2.
-;   Any deffunction that calls them fails with [EXPRNPSR3], causing the
-;   entire cascade: show-diagnoses -> show-recommendations -> run-diagnosis
-;   -> collect-and-run all fail to define.
-;
-; FIX STRATEGY — RULES-BASED OUTPUT:
-;   Output is driven by high-salience rules that fire during (run).
-;   Each rule pattern-matches one diagnosis / recommendation / reasoning-trace
-;   fact and prints it directly. No iteration built-ins are needed at all.
-;   This is fully compatible with every version of FuzzyCLIPS / CLIPS.
-;
-;   The show-* functions are kept as stubs so existing scripts don't break.
-;   run-diagnosis asserts sentinel (output-phase) facts before calling (run),
-;   which activates the print-* rules in the correct order via salience.
-; ============================================================================
-
 
 ; ============================================================================
 ; SECTION 1 — OUTPUT RULES (fire automatically during run)
